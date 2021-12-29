@@ -1,0 +1,49 @@
+#要导入的包，这个我也不是很懂，就不一一解释了
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif']=['SimHei']
+plt.rcParams['axes.unicode_minus']=False
+import warnings
+warnings.filterwarnings(action='ignore')
+from sklearn.metrics import confusion_matrix,f1_score,roc_curve,auc,precision_recall_curve,accuracy_score
+from sklearn.model_selection import train_test_split,KFold,LeavePOut,LeavePGroupsOut
+from sklearn.model_selection import cross_val_score,cross_validate
+from sklearn import preprocessing
+import sklearn.linear_model as LM
+from sklearn import neighbors
+
+data = pd.read_csv(r'C:\Users\Alice\Desktop\《Python机器学习：数据建模与分析》代码和数据、ppt资源\类别和概率.csv')
+label = data['label']
+prob = data['prob']
+pos = np.sum(label==1)
+neg = np.sum(label==0)
+prob_sort = np.sort(prob)[::-1]
+index = np.argsort(prob_sort)[::-1]
+label_sort = label[index]
+
+Pre = []
+Rec = []
+tpr = []
+fpr = []
+
+for i,item in enumerate(prob_sort):
+    Rec.append(np.sum((label_sort[:(i+1)]==1))/pos)
+    Pre.append(np.sum((label_sort[:(i+1)]==1))/(i+1))
+    tpr.append(np.sum((label_sort[:(i+1)]==1))/pos)
+    fpr.append(np.sum((label_sort[:(i+1)]==0))/neg)
+fig,axes = plt.subplots(nrows=1,ncols=2,figsize=(10,4))
+axes[0].plot(fpr,tpr,'k')
+axes[0].set_title('ROC曲线')
+axes[0].set_xlabel('FPR')
+axes[0].set_ylabel('TPR')
+axes[0].plot([0,1],[0,1],'r--')
+axes[0].set_xlim([-0.01,1.01])
+axes[0].set_ylim([-0.01,1.01])
+axes[1].plot(Rec,Pre,'k')
+axes[1].set_title('P-R曲线')
+axes[1].set_xlabel('查全率R')
+axes[1].set_ylabel('查准率P')
+axes[1].set_xlim([-0.01,1.01])
+axes[1].set_ylim([pos/(pos+neg)-0.01,1.01])
+plt.show()
